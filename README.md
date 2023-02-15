@@ -34,11 +34,11 @@ The MATLAB code provides two main functions *evaluate_results_dirs_linux.m* and 
     evaluate_results_dirs_linux test_results GT_datasets shave_width true
     evaluate_results_dirs_win test_results GT_datasets shave_width true
 
-## FID Scores
+## FID Score
 
     python -m pytorch_fid path/to/dataset1 path/to/dataset2 --device cuda:0
 
-## Reference Link
+## Reference Links
 
  1. [BasicSR](https://github.com/XPixelGroup/BasicSR)
  2. [PIRM2018](https://github.com/roimehrez/PIRM2018)
