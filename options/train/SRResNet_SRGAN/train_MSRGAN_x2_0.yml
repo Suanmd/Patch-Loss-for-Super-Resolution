@@ -1,0 +1,169 @@
+# Modified SRResNet w/o BN from:
+# Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network
+# Use perceptual loss before ReLU as ESRGAN does
+
+# general settings
+name: 006_0_MSRGAN_x2_f64b16_DIV2K_400k_B16G1_wandb
+model_type: SRGANModel
+scale: 2
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: DIV2K
+    type: PairedImageDataset
+    # dataroot_gt: datasets/DIV2K/DIV2K_train_HR_sub
+    # dataroot_lq: datasets/DIV2K/DIV2K_train_LR_bicubic/X2_sub
+    # (for lmdb)
+    dataroot_gt: datasets/DIV2K/DIV2K_train_HR_sub.lmdb
+    dataroot_lq: datasets/DIV2K/DIV2K_train_LR_bicubic_X2_sub.lmdb
+    filename_tmpl: '{}'
+    io_backend:
+      # type: disk
+      # (for lmdb)
+      type: lmdb
+
+    gt_size: 64
+    use_hflip: true
+    use_rot: true
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 6
+    batch_size_per_gpu: 16
+    dataset_enlarge_ratio: 100
+    prefetch_mode: ~
+
+  val:
+    name: Set5
+    type: PairedImageDataset
+    dataroot_gt: datasets/Set5/GTmod12
+    dataroot_lq: datasets/Set5/LRbicx2
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: MSRResNet
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 64
+  num_block: 16
+  upscale: 2
+
+network_d:
+  type: VGGStyleDiscriminator
+  num_in_ch: 3
+  num_feat: 64
+  input_size: 64
+
+# path
+path:
+  pretrain_network_g: experiments/002_MSRResNet_x2_f64b16_DIV2K_1000k_B16G1_001pretrain_wandb/models/net_g_1000000.pth
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  ema_decay: 0.999
+  optim_g:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+  optim_d:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [50000, 100000, 200000, 300000]
+    gamma: 0.5
+
+  total_iter: 400000
+  warmup_iter: -1  # no warm up
+
+  # losses
+  pixel_opt:
+    type: L1Loss
+    loss_weight: !!float 1e-2
+    reduction: mean
+
+  perceptual_opt:
+    type: PerceptualLoss
+    layer_weights:
+      'conv5_4': 1  # before relu
+    vgg_type: vgg19
+    use_input_norm: true
+    range_norm: false
+    perceptual_weight: 1.0
+    style_weight: 0
+    criterion: patch
+    use_std_to_force: false
+    perceptual_patch_weight: 0.0
+    perceptual_kernels: [4, 8]
+
+  # patch_opt_3d_xd:
+  #   type: patchLoss3DXD
+  #   use_std_to_force: true
+  #   kernel_sizes: [3, 5, 7]
+  #   loss_weight: 1.0
+
+  gan_opt:
+    type: GANLoss
+    gan_type: vanilla
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: !!float 5e-3
+
+  net_d_iters: 1
+  net_d_init_iters: 0
+
+# validation settings
+val:
+  val_freq: !!float 5e3
+  save_img: false
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 2
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 2
+      test_y_channel: false
+      better: higher
+    niqe:
+      type: calculate_niqe
+      crop_border: 2
+      better: lower
+    lpips:
+      type: calculate_lpips
+      crop_border: 2
+    patch:
+      type: calculate_pearson_patch
+      crop_border: 2
+      better: higher
+    patch2:
+      type: calculate_cosine_patch
+      crop_border: 2
+      better: higher
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
