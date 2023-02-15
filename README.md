@@ -6,10 +6,10 @@ The challenge of single-image super-resolution (SISR) is to maintain the quality
 The experimental models include EDSR, RCAN, SRGAN, ESRGAN, and SwinIR. To evaluate the impact of the proposed loss on the generated images, we use a variety of perceptual metrics, i.e., LPIPS, NIQE, Ma, and PI, to assess the image quality. Extensive experiments show that the patch loss can further improve the perceptual quality of the generated images.
 
 
-![The proposed patch loss](https://github.com/Suanmd/Patch-Loss-for-Super-Resolution/tree/main/utils/img/example.png)
+![The proposed patch loss](https://github.com/Suanmd/Patch-Loss-for-Super-Resolution/blob/main/utils/img/example.png)
 
 ## Instruction
-Sincere thanks to the developers of the [BasicSR](https://github.com/XPixelGroup/BasicSR) project. After the configuration is complete, please add the modified files we provided in the correct locations. We will upload more model configs to GitHub later.
+Sincere thanks to the developers of the [BasicSR](https://github.com/XPixelGroup/BasicSR) project. After the configuration is complete, please add the modified files we provided in the correct locations. **We will upload more model configs to GitHub later**.
 
 ## Training
 
