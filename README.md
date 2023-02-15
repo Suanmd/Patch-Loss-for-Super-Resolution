@@ -43,7 +43,7 @@ If you want to quickly add patch loss to your own model, you can refer to the fo
     
     
     pk = PatchesKernel(kernelsize, kernelstride)
-    output = pk(img)  # img shape: [b,c,h,w]
+    output = pk(img)  # img shape: [b, c, h, w]
 
 
 ## Training
