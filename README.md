@@ -43,3 +43,4 @@ The MATLAB code provides two main functions *evaluate_results_dirs_linux.m* and 
  1. [BasicSR](https://github.com/XPixelGroup/BasicSR)
  2. [PIRM2018](https://github.com/roimehrez/PIRM2018)
  3. [FID-Pytorch](https://github.com/mseitzer/pytorch-fid)
+ 4. [Ma et al.](https://github.com/chaoma99/sr-metric)
