@@ -11,6 +11,41 @@ The experimental models include EDSR, RCAN, SRGAN, ESRGAN, and SwinIR. To evalua
 ## Instruction
 Sincere thanks to the developers of the [BasicSR](https://github.com/XPixelGroup/BasicSR) project. After the configuration is complete, please add the modified files we provided in the correct locations. **We will upload more model configs to GitHub later**.
 
+If you want to quickly add patch loss to your own model, you can refer to the following example:
+
+    import torch
+    from torch import nn
+    import torch.nn.functional as F
+    
+    class PatchesKernel(nn.Module):
+        def __init__(self, kernelsize, kernelstride, kernelpadding=0):
+            super(PatchesKernel3D, self).__init__()
+            kernel = torch.eye(kernelsize ** 2).\
+                view(kernelsize ** 2, 1, kernelsize, kernelsize)
+            kernel = torch.FloatTensor(kernel)
+            self.weight = nn.Parameter(data=kernel,
+                                       requires_grad=False)
+            self.bias = nn.Parameter(torch.zeros(kernelsize ** 2),
+                                     requires_grad=False)
+            self.kernelsize = kernelsize
+            self.stride = kernelstride
+            self.padding = kernelpadding
+    
+        def forward(self, x):
+            batchsize = x.shape[0]
+            channels = x.shape[1]
+            x = x.reshape(batchsize * channels, x.shape[-2],
+                          x.shape[-1]).unsqueeze(1)
+            x = F.conv2d(x, self.weight, self.bias, self.stride, self.padding)
+            x = x.permute(0, 2, 3, 1).reshape(batchsize, channels, -1,
+                                      self.kernelsize ** 2).permute(0, 2, 1, 3)
+            return x
+    
+    
+    pk = PatchesKernel(kernelsize, kernelstride)
+    output = pk(img)  # img shape: [b,c,h,w]
+
+
 ## Training
 
     python basicsr/train.py -opt options/train/EDSR/train_EDSR_Mx2.yml
