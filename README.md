@@ -19,7 +19,7 @@ If you want to quickly add patch loss to your own model, you can refer to the fo
     
     class PatchesKernel(nn.Module):
         def __init__(self, kernelsize, kernelstride, kernelpadding=0):
-            super(PatchesKernel3D, self).__init__()
+            super(PatchesKernel, self).__init__()
             kernel = torch.eye(kernelsize ** 2).\
                 view(kernelsize ** 2, 1, kernelsize, kernelsize)
             kernel = torch.FloatTensor(kernel)
